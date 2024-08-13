@@ -4,6 +4,8 @@ from base64 import b64encode, b64decode
 
 import pickle
 
+# TODO:
+#  * Change the way of storing the encrypted data in the files
 
 def store_keys(keys, directory):
     key = ""
