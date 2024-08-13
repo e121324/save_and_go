@@ -4,24 +4,20 @@ from base64 import b64encode, b64decode
 
 import pickle
 
-# TODO:
-#  * Change the way of storing the encrypted data in the files
-
 def store_keys(keys, directory):
     key = ""
     with open(directory + "/" + ".keys", "xb") as f:
         content = "\n".join(keys).encode(encoding="utf-8")
         print(content)
         key, new_content = encrypt(content, strong=True)
-        f.write(bytearray(pickle.dumps(new_content)))
+        f.write("\n".join(new_content).encode("utf-8"))
     return key
 
 # load keys from file and delete file
 def load_keys(directory, key):
     content = ""
     with open(directory + "/" + ".keys", "r+b") as f:
-        content = f.read()
-        content = pickle.loads(content)
+        content = f.read().split(b"\n")
         content = decrypt(key, content)
 
     # os.remove(directory + "/" + ".keys")
@@ -39,7 +35,7 @@ def encrypt_directory(directory):
             keys.append(key)
 
             f.seek(0)
-            f.write( bytearray(pickle.dumps(new_content)) )
+            f.write( "\n".join(new_content).encode("utf-8") )
             f.truncate()
         # rename file to index in directory
         os.rename(directory + "/" + os.listdir(directory)[i], directory + "/" + str(i))
