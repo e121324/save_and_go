@@ -4,7 +4,7 @@ import json
 from base64 import b64encode, b64decode
 
 
-def encrypt(data, strong = False,  header = b""):
+def encrypt(data, strong=False, header=b""):
     # Generate key and cipher
     key = get_random_bytes(32 if strong else 16)
     cipher = AES.new(key, AES.MODE_GCM)  # Use Galois/Counter Mode
@@ -14,17 +14,37 @@ def encrypt(data, strong = False,  header = b""):
     cipher_text, tag = cipher.encrypt_and_digest(data)
 
     # Send key and parsed data
-    return b64encode(key).decode("utf-8"), [ b64encode(x).decode('utf-8') for x in (header, cipher_text, cipher.nonce, tag) ]
+
+    # TODO:
+    #  * Rewrite in a better way...
+    data_to_send = (header, cipher_text, cipher.nonce, tag) if header else (cipher_text, cipher.nonce, tag)
+
+    return b64encode(key).decode("utf-8"), [b64encode(x).decode('utf-8') for x in data_to_send]
 
 
 def decrypt(key, cipher_data):
     # Decode data and generate new cipher
-    cipher_data = [ b64decode(e) for e in cipher_data]
+    cipher_data = [b64decode(e) for e in cipher_data]
 
-    cipher = AES.new(b64decode(key), AES.MODE_GCM, nonce=cipher_data[2])
-    if cipher_data[0]:
+    header = len(cipher_data) == 4
+
+    cipher = AES.new(b64decode(key), AES.MODE_GCM, nonce=cipher_data[2 if header else 1])
+
+    if header:
         cipher.update(cipher_data[0])
 
-    data = cipher.decrypt_and_verify(cipher_data[1], cipher_data[3])
-    return data
+    data = cipher.decrypt_and_verify(cipher_data[1 if header else 0], cipher_data[3 if header else 2])
+    return data.decode("utf-8")
 
+
+# testing funcs:
+""" 
+header = b"header"
+data = b"info123"
+
+key, hidden_info = encrypt(data, header=header)
+print(key, hidden_info)
+
+found_data = decrypt(key, hidden_info)
+print(found_data)
+"""
