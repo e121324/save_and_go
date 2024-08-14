@@ -1,5 +1,6 @@
 import os
 from encryption_tools import encrypt, decrypt
+from base64 import b64encode, b64decode
 
 
 def store_keys(keys, directory):
@@ -25,20 +26,48 @@ def load_keys(directory, key):
     return content.split("\n")
 
 
+def encrypt_file(path="", directory="", name="", new_name=""):
+    key = ""
+    file = path if path else directory + "/" + name
+    with open(file, "r+b") as f:
+        content = f.read()
+
+        key, new_content = encrypt(content)
+        _, encrypted_name = encrypt(name.encode("utf-8"), key=key)
+        print( "just after ", decrypt(key, encrypted_name))
+
+        f.seek(0)
+        f.write("\n".join(new_content + encrypted_name).encode("utf-8"))
+        f.truncate()
+
+    os.rename(file, directory + "/" + new_name)
+    return key
+
+
+def decrypt_file(key, path="", directory="", name=""):
+    file = path if path else directory + "/" + name
+
+    new_name = ""
+    with open(file, "r+") as f:
+        content = f.read().split("\n")
+
+        new_content = decrypt(key, content[:3])
+        print(content[3:], key)
+        new_name = decrypt(key, content[3:])
+
+        f.seek(0)
+        f.write(new_content)
+        f.truncate()
+
+    os.rename(file, directory + "/" + new_name)
+
+
 def encrypt_directory(directory):
     keys = []
+
     for i in range(len(os.listdir(directory))):
-        with open(directory + "/" + os.listdir(directory)[i], "r+b") as f:
-            content = f.read()
-
-            key, new_content = encrypt(content)
-            keys.append(key)
-
-            f.seek(0)
-            f.write("\n".join(new_content).encode("utf-8"))
-            f.truncate()
-        # rename file to index in directory
-        os.rename(directory + "/" + os.listdir(directory)[i], directory + "/" + str(i))
+        k = encrypt_file(directory=directory, name=os.listdir(directory)[i], new_name=str(i))
+        keys.append(k)
 
     key = store_keys(keys, directory)
 
@@ -49,25 +78,16 @@ def decrypt_directory(directory, key):
     keys = load_keys(directory, key)
 
     for file in os.listdir(directory):
-
-        with open(directory + "/" + file, "r+") as f:
-            content = f.read().split("\n")
-
-            new_content = decrypt(keys[int(file)], content)
-
-            f.seek(0)
-            f.write(new_content)
-            f.truncate()
+        decrypt_file(keys[int(file)], directory=directory, name=file)
 
 
 direc = "C:\\Users\\emili_cydqq3g\\PycharmProjects\\save_and_go\\local_server\\test"
 
-
-
 # k = encrypt_directory(direc)
 # print(k)
-
-
-k = "RW8Vk4RlmgDlA7jisk5HSlRchPgMkd0BgiOX5nR/0NM="
-
+k = "rb4N2XhFKrBRSkpLYNDBOpY8bthvxGoGSsxTACiKK7E="
 decrypt_directory(direc, k)
+
+# ['/5M=', '5YUUawnd+OrDnip1v34bxA==', 'coSqXUboAZg7PrA68L8GkA==']
+# OPUkTwSMh5PbydMfdLzXCgUMvOQxgjX9Y3OpBUSyX5s=
+#

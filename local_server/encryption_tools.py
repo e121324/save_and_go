@@ -4,9 +4,12 @@ import json
 from base64 import b64encode, b64decode
 
 
-def encrypt(data, strong=False, header=b""):
+def encrypt(data, key = "", strong=False, header=b""):
     # Generate key and cipher
-    key = get_random_bytes(32 if strong else 16)
+    if not key:
+        key = get_random_bytes(32 if strong else 16)
+    else:
+        key = b64decode(key)
     cipher = AES.new(key, AES.MODE_GCM)  # Use Galois/Counter Mode
 
     if header:
@@ -38,13 +41,19 @@ def decrypt(key, cipher_data):
 
 
 # testing funcs:
+
 """ 
 header = b"header"
 data = b"info123"
 
-key, hidden_info = encrypt(data, header=header)
-print(key, hidden_info)
+k, hidden_info = encrypt(data, header=header)
+print(k, hidden_info)
 
-found_data = decrypt(key, hidden_info)
+_, info2 = encrypt(b"coco", key=k)
+print(info2)
+print(decrypt(k, info2))
+
+found_data = decrypt(k, hidden_info)
 print(found_data)
 """
+
