@@ -20,7 +20,7 @@ def load_keys(directory, key):
         # TODO:
         #   * Verify that a key isn't cut in half due to the presence of a random new line
         content = f.read().split("\n")
-        content = decrypt(key, content)
+        content = decrypt(key, content).decode("utf-8")
 
     os.remove(directory + "/" + ".keys")
     return content.split("\n")
@@ -48,13 +48,15 @@ def decrypt_file(key, path="", directory="", name=""):
     file = path if path else directory + "/" + name
 
     new_name = ""
-    with open(file, "r+") as f:
+    new_content = ""
+    with open(file, "r") as f:
         content = f.read().split("\n")
 
         new_content = decrypt(key, content[:3])
         print(content[3:], key)
-        new_name = decrypt(key, content[3:])
+        new_name = decrypt(key, content[3:]).decode("utf-8")
 
+    with open(file, "wb") as f:
         f.seek(0)
         f.write(new_content)
         f.truncate()
@@ -81,11 +83,12 @@ def decrypt_directory(directory, key):
         decrypt_file(keys[int(file)], directory=directory, name=file)
 
 
-direc = "C:\\Users\\emili_cydqq3g\\PycharmProjects\\save_and_go\\local_server\\test"
+direc = "/Users/emilev/PycharmProjects/save_and_go/local_server/test"
 
-# k = encrypt_directory(direc)
-# print(k)
-k = "rb4N2XhFKrBRSkpLYNDBOpY8bthvxGoGSsxTACiKK7E="
+k = encrypt_directory(direc)
+print(k)
+# k = "rb4N2XhFKrBRSkpLYNDBOpY8bthvxGoGSsxTACiKK7E="
+input()
 decrypt_directory(direc, k)
 
 # ['/5M=', '5YUUawnd+OrDnip1v34bxA==', 'coSqXUboAZg7PrA68L8GkA==']

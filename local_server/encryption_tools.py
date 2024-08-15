@@ -37,7 +37,7 @@ def decrypt(key, cipher_data):
         cipher.update(cipher_data[0])
 
     data = cipher.decrypt_and_verify(cipher_data[1 if header else 0], cipher_data[3 if header else 2])
-    return data.decode("utf-8")
+    return data
 
 
 # testing funcs:
