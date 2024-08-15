@@ -1,28 +1,31 @@
 import os
+
+from holoviews.plotting.util import dim_range_key
+
 from encryption_tools import encrypt, decrypt
 from base64 import b64encode, b64decode
 
 
-def store_keys(keys, directory):
-    key = ""
-    with open(directory + "/" + ".keys", "xb") as f:
-        content = "\n".join(keys).encode(encoding="utf-8")
+def store_data(data, directory, name, key=""):
+    with open(directory + "/" + name, "xb") as f:
+        content = "\n".join(data).encode(encoding="utf-8")
 
-        key, new_content = encrypt(content, strong=True)
+        key, new_content = encrypt(content, key=key, strong=True)
         f.write("\n".join(new_content).encode("utf-8"))
     return key
 
 
 # load keys from file and delete file
-def load_keys(directory, key):
+def load_data(directory, key, name, destroy=True):
     content = ""
-    with open(directory + "/" + ".keys", "r+") as f:
+    with open(directory + "/" + name, "r+") as f:
         # TODO:
         #   * Verify that a key isn't cut in half due to the presence of a random new line
         content = f.read().split("\n")
         content = decrypt(key, content).decode("utf-8")
 
-    os.remove(directory + "/" + ".keys")
+    if destroy:
+        os.remove(directory + "/" + name)
     return content.split("\n")
 
 
@@ -64,32 +67,72 @@ def decrypt_file(key, path="", directory="", name=""):
     os.rename(file, directory + "/" + new_name)
 
 
-def encrypt_directory(directory):
+def encrypt_directory(directory, nested=False):
     keys = []
+    dir_data = []
+    # First encrypt all files in the directory
 
-    for i in range(len(os.listdir(directory))):
-        k = encrypt_file(directory=directory, name=os.listdir(directory)[i], new_name=str(i))
+    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+
+    for i in range(len(files)):
+        k = encrypt_file(directory=directory, name=files[i], new_name=str(i))
         keys.append(k)
 
-    key = store_keys(keys, directory)
+    # Then encrypt the keys and store them in a file
+
+    key = store_data(keys, directory, ".keys") if keys else ""
+
+    # Get the directories
+    directories = [f for f in os.listdir(directory) if os.path.isdir(os.path.join(directory, f))]
+
+    for i in range(len(directories)):
+        k = encrypt_directory(directory + "/" + directories[i], nested=True)
+        dir_data.append(k)
+        dir_data.append(directories[i])
+        os.rename(directory + "/" + directories[i], directory + "/d" + str(i))
+
+    # Store the keys and titles of the directories in a file encrypted with the same key as the other keys
+    if directories:
+        store_data(dir_data, directory,name=".dir", key=key)
 
     return key
 
 
 def decrypt_directory(directory, key):
-    keys = load_keys(directory, key)
 
-    for file in os.listdir(directory):
+    keys = []
+    if os.path.isfile(directory + "/.keys"):
+        keys = load_data(directory, key, ".keys")
+    dir_data = []
+    if os.path.isfile(directory + "/.dir"):
+        dir_data = load_data(directory, key, ".dir")
+
+    # Decrypt the files first
+    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+    print(files)
+    for file in files:
         decrypt_file(keys[int(file)], directory=directory, name=file)
+
+    # Decrypt the directories and their name
+
+    for i in range(0, len(dir_data), 2):
+        os.rename(directory + "/d" + str(i // 2), directory + "/" + dir_data[i + 1])
+        decrypt_directory(directory + "/" + dir_data[i + 1], dir_data[i])
+
+
+
+
 
 
 direc = "/Users/emilev/PycharmProjects/save_and_go/local_server/test"
 
-k = encrypt_directory(direc)
-print(k)
-# k = "rb4N2XhFKrBRSkpLYNDBOpY8bthvxGoGSsxTACiKK7E="
+k2 = encrypt_directory(direc)
+print(k2)
+# k2 = "tUyAYow1YCHsG6j9tRmm9Wm+ihq7CSj55Erv/6WQLMY="
 input()
-decrypt_directory(direc, k)
+decrypt_directory(direc, k2)
+
+# print(load_data(direc, k2, ".dir", False))
 
 # ['/5M=', '5YUUawnd+OrDnip1v34bxA==', 'coSqXUboAZg7PrA68L8GkA==']
 # OPUkTwSMh5PbydMfdLzXCgUMvOQxgjX9Y3OpBUSyX5s=
