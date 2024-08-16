@@ -1,7 +1,5 @@
 import os
 from encryption_tools import encrypt, decrypt
-from base64 import b64encode, b64decode
-
 
 def store_data(data, directory, name, key=""):
     with open(directory + "/" + name, "xb") as f:
