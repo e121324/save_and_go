@@ -106,13 +106,18 @@ def decrypt_directory(directory, key):
     files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
     print(files)
     for file in files:
-        decrypt_file(keys[int(file)], directory=directory, name=file)
+        try:
+            decrypt_file(keys[int(file)], directory=directory, name=file)
+        except ValueError:
+            print(f"File not decrypted: {file}")
 
     # Decrypt the directories and their name
-
     for i in range(0, len(dir_data), 2):
-        os.rename(directory + "/d" + str(i // 2), directory + "/" + dir_data[i + 1])
-        decrypt_directory(directory + "/" + dir_data[i + 1], dir_data[i])
+        try:
+            os.rename(directory + "/d" + str(i // 2), directory + "/" + dir_data[i + 1])
+            decrypt_directory(directory + "/" + dir_data[i + 1], dir_data[i])
+        except Exception as e:
+            print(f"Something went wrong {e}")
 
 
 
@@ -121,11 +126,11 @@ def decrypt_directory(directory, key):
 
 direc = "/Users/emilev/PycharmProjects/save_and_go/local_server/test"
 
-k2 = encrypt_directory(direc)
-print(k2)
+# k2 = encrypt_directory(direc)
+# print(k2)
 # k2 = "tUyAYow1YCHsG6j9tRmm9Wm+ihq7CSj55Erv/6WQLMY="
-input()
-decrypt_directory(direc, k2)
+# input()
+# decrypt_directory(direc, k2)
 
 # print(load_data(direc, k2, ".dir", False))
 
