@@ -126,7 +126,7 @@ def decrypt_directory(directory, key):
             print(f"Something went wrong {e}")
 
 
-direc = "/Users/emilev/PycharmProjects/save_and_go/local_server/test"
+# direc = "/Users/emilev/PycharmProjects/save_and_go/local_server/test"
 
 # k2 = encrypt_directory(direc)
 # print(k2)
