@@ -41,7 +41,6 @@ def encrypt_file(path="", directory="", name="", new_name=""):
     os.rename(file, directory + "/" + new_name)
     return key
 
-
 def decrypt_file(key, path="", directory="", name="", rewrite=True, name_only = False):
     file = path if path else directory + "/" + name
 
@@ -62,6 +61,7 @@ def decrypt_file(key, path="", directory="", name="", rewrite=True, name_only = 
             f.truncate()
 
         os.rename(file, directory + "/" + new_name)
+        return new_name
     else:
         return ( new_name, new_content ) if not name_only else new_name
 
@@ -98,7 +98,6 @@ def encrypt_directory(directory, nested=False):
 
     return key
 
-
 def decrypt_directory(directory, key):
 
     keys = []
@@ -108,14 +107,20 @@ def decrypt_directory(directory, key):
     if os.path.isfile(directory + "/.dir"):
         dir_data = load_data(directory, key, ".dir")
 
+    already_decrypted = []
+    if os.path.isfile(directory + "/.changes"):
+        already_decrypted = load_data(directory, key, ".changes")
+
     # Decrypt the files first
-    files = get_files_in_dir(directory)
+    # files = get_files_in_dir(directory)
     # print(files)
-    for file in files:
+    for i in range(len(keys)):
+        if str(i) in already_decrypted:
+            continue
         try:
-            decrypt_file(keys[int(file)], directory=directory, name=file)
+            decrypt_file(keys[i], directory=directory, name=str(i))
         except ValueError:
-            print(f"File not decrypted: {file}")
+            print(f"File not decrypted: {i}")
 
     # Decrypt the directories and their name
     for i in range(0, len(dir_data), 2):

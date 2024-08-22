@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
-from files_tools import encrypt_directory, decrypt_directory, load_data, decrypt_file
+from files_tools import encrypt_directory, decrypt_directory, load_data, decrypt_file, store_data
 import ntpath
+import os
+
 app = Flask(__name__)
 
 @app.route("/encrypt_dir", methods=["POST"])
@@ -58,8 +60,14 @@ def info_2():
 
     keys = load_data(direc, key, ".keys", destroy=False)
 
-    response = {"PATH": direc}
+    changes = load_data(direc, key, ".changes", destroy=False) if os.path.isfile(direc + "/" + ".changes") else []
+    print(changes)
+    response = {"PATH": direc,
+                "changes": changes}
     for i in range(len(keys)):
+        if str(i) in changes:
+            response[str(i)] = { "name": changes[changes.index(str(i)) + 1], "key": keys[i]}
+            continue
         response[str(i)] = {"name": decrypt_file(keys[i], directory=direc, name=str(i), rewrite=False, name_only=True), "key": keys[i]}
 
     return jsonify(response)
@@ -79,7 +87,15 @@ def decrypt_2():
 
     key = load_data(direc, folder_key, ".keys", destroy=False)[int(file)]
 
-    decrypt_file(key, directory=direc, name=file)
+    new_name = decrypt_file(key, directory=direc, name=file)
+
+
+
+    data = [file, new_name] + (load_data(direc, folder_key, ".changes") if os.path.isfile(direc + "/" + ".changes") else [] )
+
+    store_data(data, direc, ".changes", folder_key)
+
+    print(load_data(direc, folder_key, ".changes", destroy=False))
 
     return jsonify({"message": "File decrypted"})
 
