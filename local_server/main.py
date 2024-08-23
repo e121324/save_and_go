@@ -11,8 +11,11 @@ def encrypt_1():
     req = request.get_json()
 
     direc = req["directory"]
+    key = req["key"]
+    new_name = req["new_name"]
+
     print("Encrypting directory: ", direc)
-    key = encrypt_directory(direc)
+    key = encrypt_directory(direc, key=key, new_name=new_name)
     response = jsonify({
         "key": key
     })
@@ -26,8 +29,9 @@ def decrypt_1():
 
     direc = req["directory"]
     key = req["key"]
+    new_name = req["new_name"]
     print("Decrypting directory: ", direc)
-    decrypt_directory(direc, key)
+    decrypt_directory(direc, key, new_name=new_name)
     response = jsonify({
         "message": "Decryption complete"
     })
@@ -43,10 +47,14 @@ def info_1():
     print("Getting directory info: ", direc)
 
     dir_data = load_data(direc, key, ".dir", destroy=False)
+    print(dir_data)
 
-    response = {"PATH": direc}
+    response = {"PATH": direc, "changes": []}
     for i in range(0, len(dir_data), 2):
         response[dir_data[i+1]] = { "name": f"d{i // 2}", "key": dir_data[i]}
+
+        if not os.path.isdir(direc + "/" + f"d{i//2}"):
+            response["changes"].append(f"d{i//2}")
 
     return jsonify(response)
 
@@ -90,12 +98,10 @@ def decrypt_2():
     new_name = decrypt_file(key, directory=direc, name=file)
 
 
-
     data = [file, new_name] + (load_data(direc, folder_key, ".changes") if os.path.isfile(direc + "/" + ".changes") else [] )
-
     store_data(data, direc, ".changes", folder_key)
 
-    print(load_data(direc, folder_key, ".changes", destroy=False))
+    # print(load_data(direc, folder_key, ".changes", destroy=False))
 
     return jsonify({"message": "File decrypted"})
 

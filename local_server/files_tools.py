@@ -24,13 +24,13 @@ def load_data(directory, key, name, destroy=True):
     return content.split("\n")
 
 
-def encrypt_file(path="", directory="", name="", new_name=""):
-    key = ""
+def encrypt_file(path="", directory="", name="", new_name="", key=""):
+    # key = ""
     file = path if path else directory + "/" + name
     with open(file, "r+b") as f:
         content = f.read()
 
-        key, new_content = encrypt(content)
+        key, new_content = encrypt(content, key=key)
         _, encrypted_name = encrypt(name.encode("utf-8"), key=key)
         # print( "just after ", decrypt(key, encrypted_name))
 
@@ -68,7 +68,7 @@ def decrypt_file(key, path="", directory="", name="", rewrite=True, name_only = 
 def get_files_in_dir(directory):
     return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
 
-def encrypt_directory(directory, nested=False):
+def encrypt_directory(directory, nested=False, key="", new_name=""):
     keys = []
     dir_data = []
     # First encrypt all files in the directory
@@ -76,12 +76,12 @@ def encrypt_directory(directory, nested=False):
     files = get_files_in_dir(directory)
 
     for i in range(len(files)):
-        k = encrypt_file(directory=directory, name=files[i], new_name=str(i))
+        k = encrypt_file(directory=directory, name=files[i], new_name=str(i), key=key)
         keys.append(k)
 
     # Then encrypt the keys and store them in a file
 
-    key = store_data(keys, directory, ".keys") if keys else ""
+    key = store_data(keys, directory, ".keys", key=key) if keys else key
 
     # Get the directories
     directories = [f for f in os.listdir(directory) if os.path.isdir(os.path.join(directory, f))]
@@ -93,12 +93,18 @@ def encrypt_directory(directory, nested=False):
         os.rename(directory + "/" + directories[i], directory + "/d" + str(i))
 
     # Store the keys and titles of the directories in a file encrypted with the same key as the other keys
-    if directories:
-        store_data(dir_data, directory,name=".dir", key=key)
+
+    key = store_data(dir_data, directory,name=".dir", key=key) if directories else key
+
+    base, tmp = os.path.split(directory)
+    if not tmp:
+        base = os.path.dirname(base)
+    if new_name:
+        os.rename(directory, os.path.join(base, new_name))
 
     return key
 
-def decrypt_directory(directory, key):
+def decrypt_directory(directory, key, new_name=""):
 
     keys = []
     if os.path.isfile(directory + "/.keys"):
@@ -124,11 +130,20 @@ def decrypt_directory(directory, key):
 
     # Decrypt the directories and their name
     for i in range(0, len(dir_data), 2):
+        if not os.path.isdir( os.path.join(directory, f"d{i // 2}")):
+            print(f"Already decrypted d{i//2}")
+            continue
         try:
             os.rename(directory + "/d" + str(i // 2), directory + "/" + dir_data[i + 1])
             decrypt_directory(directory + "/" + dir_data[i + 1], dir_data[i])
         except Exception as e:
             print(f"Something went wrong {e}")
+
+    base, tmp = os.path.split(directory)
+    if not tmp:
+        base = os.path.dirname(base)
+    if new_name:
+        os.rename(directory, os.path.join(base, new_name))
 
 
 # direc = "/Users/emilev/PycharmProjects/save_and_go/local_server/test"
