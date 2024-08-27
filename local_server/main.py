@@ -2,8 +2,13 @@ from flask import Flask, jsonify, request
 from files_tools import encrypt_directory, decrypt_directory, load_data, decrypt_file, store_data
 import ntpath
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
+# TODO: FileExistsError:
+#  * [WinError 183] No se puede crear un archivo que ya existe
 
 @app.route("/encrypt_dir", methods=["POST"])
 def encrypt_1():
