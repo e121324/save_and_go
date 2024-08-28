@@ -2,8 +2,13 @@ from flask import Flask, jsonify, request
 from files_tools import encrypt_directory, decrypt_directory, load_data, decrypt_file, store_data
 import ntpath
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
+# TODO: FileExistsError:
+#  * [WinError 183] No se puede crear un archivo que ya existe
 
 @app.route("/encrypt_dir", methods=["POST"])
 def encrypt_1():
@@ -15,10 +20,19 @@ def encrypt_1():
     new_name = req["new_name"]
 
     print("Encrypting directory: ", direc)
-    key = encrypt_directory(direc, key=key, new_name=new_name)
-    response = jsonify({
-        "key": key
-    })
+
+    try:
+        key = encrypt_directory(direc, key=key, new_name=new_name)
+        response = jsonify({
+            "status":"ok",
+            "key": key
+        })
+    except Exception as e:
+        print(e)
+        response = jsonify({
+            "status": "err",
+            "msg": str(e)
+        })
 
     return response
 
@@ -31,10 +45,18 @@ def decrypt_1():
     key = req["key"]
     new_name = req["new_name"]
     print("Decrypting directory: ", direc)
-    decrypt_directory(direc, key, new_name=new_name)
-    response = jsonify({
-        "message": "Decryption complete"
-    })
+    try:
+        decrypt_directory(direc, key, new_name=new_name)
+        response = jsonify({
+            "status": "ok",
+            "message": "Decryption complete"
+        })
+    except Exception as e:
+        print(e)
+        response = jsonify({
+            "status": "err",
+            "msg": str(e)
+        })
 
     return response
 
