@@ -20,10 +20,19 @@ def encrypt_1():
     new_name = req["new_name"]
 
     print("Encrypting directory: ", direc)
-    key = encrypt_directory(direc, key=key, new_name=new_name)
-    response = jsonify({
-        "key": key
-    })
+
+    try:
+        key = encrypt_directory(direc, key=key, new_name=new_name)
+        response = jsonify({
+            "status":"ok",
+            "key": key
+        })
+    except Exception as e:
+        print(e)
+        response = jsonify({
+            "status": "err",
+            "msg": str(e)
+        })
 
     return response
 
@@ -36,10 +45,18 @@ def decrypt_1():
     key = req["key"]
     new_name = req["new_name"]
     print("Decrypting directory: ", direc)
-    decrypt_directory(direc, key, new_name=new_name)
-    response = jsonify({
-        "message": "Decryption complete"
-    })
+    try:
+        decrypt_directory(direc, key, new_name=new_name)
+        response = jsonify({
+            "status": "ok",
+            "message": "Decryption complete"
+        })
+    except Exception as e:
+        print(e)
+        response = jsonify({
+            "status": "err",
+            "msg": str(e)
+        })
 
     return response
 
