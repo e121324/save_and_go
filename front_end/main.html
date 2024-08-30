@@ -123,24 +123,27 @@
 
                 <div>
                     <div class="mb-3">
-                        <label for="direc_info" class="form-label">Full path to directory </label>
-                        <input type="text" class="form-control" id="direc_info" placeholder="/home/user/Photos/">
+                        <label for="direc_get_info" class="form-label">Full path to directory </label>
+                        <input type="text" class="form-control" id="direc_get_info" placeholder="/home/user/Photos/">
 
                     </div>
 
                     <div class="mb-3">
 
-                        <label for="info_key" class="form-label">256 bits key</label>
-                        <input type="password" class="form-control" id="info_key" placeholder="XXXXXXXX">
+                        <label for="key_get_info" class="form-label">256 bits key</label>
+                        <input type="password" class="form-control" id="key_get_info" placeholder="XXXXXXXX">
 
                     </div>
 
                     <div class="mb-3">
-                        <button type="button" class="btn btn-info">Get info</button>
+                        <button type="button" class="btn btn-info" id="get_info_button">Get info</button>
                     </div>
                 </div>
 
                 <div class="card card-body">
+
+                    <!-- -->
+
 
                     <p>Directory content:</p>
                     <br>
@@ -349,6 +352,7 @@
 
 <!-- Custom script -->
 
+<script src="comp_utilities.js"></script>
 <script src="script.js"></script>
 
 </body>
