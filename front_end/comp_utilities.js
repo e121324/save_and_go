@@ -69,7 +69,7 @@ const get_table_head = for_dir => {
  */
 
 
-let get_button = (style, text, callback) => {
+let get_button = (style, text, disabled = false) => {
     let td = document.createElement("td");
     td.setAttribute("style", "width: 10%;");
     let button = document.createElement("button");
@@ -78,17 +78,19 @@ let get_button = (style, text, callback) => {
     button.setAttribute("class", style);
     td.appendChild(button);
 
+    button.disabled = disabled;
+
+    // button.addEventListener("click", callback);
+
     return td
 }
 
-const get_table_row = (for_dir, code, n, key ) => {
+const get_table_row = (for_dir, code, n, key, path ) => {
 
 
     let tr = document.createElement("tr"),
         th = document.createElement("th"),
-        td1 = document.createElement("td"),
-        td2 = document.createElement("td"),
-        td3 = document.createElement("td");
+        td = document.createElement("td");
 
     th.setAttribute("scope", "row");
     th.setAttribute("style", "width: 5%;");
@@ -96,60 +98,86 @@ const get_table_row = (for_dir, code, n, key ) => {
 
     tr.appendChild(th);
 
-    td1.textContent = n
+    td.textContent = n
 
-    tr.appendChild(td1)
+    tr.appendChild(td)
 
     if (for_dir) {
-
-        tr.appendChild(td2)
+        tr.appendChild(get_button("btn btn-info", "Get info"));
     }
 
-    td2.setAttribute("style", "width: 10%;");
-    let button1 = document.createElement("button");
-    button1.textContent = "Encrypt";
-    button1.setAttribute("type", "button");
-    button1.setAttribute("class", "btn btn-success");
-    td2.appendChild(button1);
+    let b1 = get_button("btn btn-danger", "Encrypt", true);
+    tr.appendChild(b1);
+    let b2 = get_button("btn btn-success", "Decrypt");
+    tr.appendChild(b2);
 
-    tr.appendChild(td2)
+    b1.children[0].addEventListener("click", () => {
+        console.log("Encrypting with key: ", key);
+        b1.children[0].disabled = true;
+        b2.children[0].disabled = false
+    });
+    b2.children[0].addEventListener("click", () => {
+        console.log("Decrypting with key: ", key);
+        b2.children[0].disabled = true;
 
-    td3.setAttribute("style", "width: 10%;");
-    let button2 = document.createElement("button");
-    button2.textContent = "Decrypt";
-    button2.setAttribute("type", "button");
-    button2.setAttribute("class", "btn btn-danger");
-    button2.disabled = true;
-    td3.appendChild(button2);
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
 
-    tr.appendChild(td3)
+        fetch("http://127.0.0.1:5010/decrypt_file", {
+            method: "POST",
+            body: JSON.stringify({
+                "path": path + "/" + code,
+                "key": key_get_info.value
+            }),
+            headers: myHeaders,
+        }).then(response => response.json())
+            .then(data => {
+                console.log(data);
+                b1.children[0].disabled = false;
+            });
 
-    return th;
+    });
+
+
+    return tr;
 }
 
-const get_table_body = (info, for_dir) => {
+const get_table_body = (data, for_dir) => {
     let tbody = document.createElement("tbody");
 
-    for(let i = 0; i < info.length; ++i) {
-
+    for(let i = 0; i < data.info.length; ++i) {
+        tbody.appendChild(get_table_row(for_dir, data.info[i].code, data.info[i].name, data.info[i].key, data.path));
     }
+
+    return tbody;
 }
 
-const get_table = (info, for_dir) => {
+const get_table = (data, for_dir) => {
     let table = document.createElement("table"),
-        thead = get_table_head(for_dir);
+        thead = get_table_head(for_dir),
+        tbody = get_table_body(data, for_dir);
+
     table.setAttribute("class", "table");
-
-
     table.appendChild(thead);
+    table.appendChild(tbody);
 
-
-
-    console.log(table);
+    return table
 }
 
 const display_dir_info = (element, res_dir, res_files) => {
     element.innerHTML = "<p>Directory content:</p> <br>";
 
+    if(res_files.status === "ok"){
+        let p = document.createElement("p");
+        p.textContent = "Files";
+        element.appendChild(p);
+        element.appendChild(get_table(res_files.data, false));
+    }
 
+    if(res_dir.status === "ok"){
+        let p = document.createElement("p");
+        p.textContent = "Nested directories";
+        element.appendChild(p);
+        element.appendChild(get_table(res_dir.data, true));
+    }
 }
