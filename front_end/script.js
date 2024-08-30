@@ -132,9 +132,11 @@ get_info_button.addEventListener("click", async e => {
 
      */
 
-    let res = await retrieve_dir_data(direc_get_info.value, key_get_info.value);
+    let res_dir = await retrieve_dir_data(direc_get_info.value, key_get_info.value);
 
-    console.log(res);
-    console.log(res.data.info[0].key);
+    let res_files = await retrieve_files_data(direc_get_info.value, key_get_info.value);
+
+    console.log(res_dir, res_files);
+    console.log(res_dir.data.info[0].key);
 
 });
