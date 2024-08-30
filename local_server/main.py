@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from files_tools import encrypt_directory, decrypt_directory, load_data, decrypt_file, store_data
+from files_tools import encrypt_directory, decrypt_directory, load_data, decrypt_file, store_data, already_encrypted
 import ntpath
 import os
 from flask_cors import CORS
@@ -20,6 +20,12 @@ def encrypt_1():
     new_name = req["new_name"]
 
     print("Encrypting directory: ", direc)
+
+    if already_encrypted(direc):
+        return jsonify({
+            "status": "err",
+            "msg": "Directory already encrypted"
+        })
 
     try:
         key = encrypt_directory(direc, key=key, new_name=new_name)
