@@ -117,20 +117,40 @@ def info_2():
     key = req["key"]
     print("Getting files info: ", direc)
 
-    keys = load_data(direc, key, ".keys", destroy=False)
+    try:
+        if not are_files_encrypted(direc):
+            return jsonify({
+                "status": "warning",
+                "msg": "No files encrypted"
+            })
 
-    changes = load_data(direc, key, ".changes", destroy=False) if os.path.isfile(direc + "/" + ".changes") else []
-    print(changes)
-    response = {"PATH": direc,
-                "changes": changes}
-    for i in range(len(keys)):
-        if str(i) in changes:
-            response[str(i)] = {"name": changes[changes.index(str(i)) + 1], "key": keys[i]}
-            continue
-        response[str(i)] = {"name": decrypt_file(keys[i], directory=direc, name=str(i), rewrite=False, name_only=True),
-                            "key": keys[i]}
+        keys = load_data(direc, key, ".keys", destroy=False)
 
-    return jsonify(response)
+        changes = load_data(direc, key, ".changes", destroy=False) if os.path.isfile(direc + "/" + ".changes") else []
+        print(changes)
+        response = {"PATH": direc,
+                    "changes": changes,
+                    "info": []}
+        for i in range(len(keys)):
+            response["info"].append({
+                "name": changes[changes.index(str(i)) + 1] if (str(i) in changes) else decrypt_file(keys[i],
+                                                                                                    directory=direc,
+                                                                                                    name=str(i),
+                                                                                                    rewrite=False,
+                                                                                                    name_only=True),
+                "code": str(i),
+                "key": keys[i]
+            })
+
+        return jsonify({
+            "status": "ok",
+            "data": response
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "err",
+            "msg": str(e)
+        })
 
 
 @app.route("/decrypt_file", methods=["POST"])
