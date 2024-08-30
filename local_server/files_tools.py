@@ -150,8 +150,17 @@ def decrypt_directory(directory, key, new_name=""):
         os.rename(directory, os.path.join(base, new_name))
 
 
+def are_dir_encrypted(dir):
+    return os.path.isfile(os.path.join(dir, ".dir"))
+
+
+def are_files_encrypted(dir):
+    return os.path.isfile(os.path.join(dir, ".keys"))
+
+
 def already_encrypted(dir):
-    return os.path.isfile(os.path.join(dir, ".dir")) or os.path.isfile(os.path.join(dir, ".keys"))
+    return are_dir_encrypted(dir) or are_files_encrypted(dir)
+
 
 # direc = "/Users/emilev/PycharmProjects/save_and_go/local_server/test"
 
