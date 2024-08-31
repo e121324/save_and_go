@@ -91,6 +91,10 @@ decrypt_dir_button.addEventListener("click", e => {
             console.log(data);
             if(data.status === "ok"){
                 appendAlert("Decryption successful", "success");
+
+
+                get_info_container.setAttribute("class", "");
+                get_info_container.innerHTML = "";
             } else {
 
                 if(data.msg === "Incorrect padding") {
@@ -107,10 +111,15 @@ decrypt_dir_button.addEventListener("click", e => {
 });
 
 
+
+
 get_info_button.addEventListener("click", async e => {
     console.log(direc_get_info.value, key_get_info.value);
 
     // First let's get the dir info:
+    await get_info(direc_get_info.value, key_get_info.value, get_info_container );
+
+    get_info_container.setAttribute("class", "card card-body");
 
     /*
 
@@ -134,13 +143,10 @@ get_info_button.addEventListener("click", async e => {
 
      */
 
-    let res_dir = await retrieve_dir_data(direc_get_info.value, key_get_info.value);
+    /* let res_dir = await retrieve_dir_data(direc_get_info.value, key_get_info.value);
 
     let res_files = await retrieve_files_data(direc_get_info.value, key_get_info.value);
 
     display_dir_info(get_info_container, res_dir, res_files);
-
-    console.log(res_dir, res_files);
-    console.log(res_dir.data.info[0].key);
-
+*/
 });
