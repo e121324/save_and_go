@@ -7,7 +7,7 @@ Tool to encrypt directories using AES Encryption implementation of pycryptodome 
 
 ### Contents:
 - [Features](#features)
-  - [Simple encryption and decryption for directories](#simple-encryption-and-decryption-for-directories-)
+  - [Simple encryption and decryption for directories](#simple-encryption-and-decryption-for-directories)
   - [Key Feature](#key-feature) ⭐⭐✨
 - [Quick start](#quick-start) 
 
@@ -17,9 +17,9 @@ Tool to encrypt directories using AES Encryption implementation of pycryptodome 
 # Features
 
 
-### Simple encryption and decryption for directories 
+### Simple encryption and decryption for directories
 
-> In the directories utilities sections, by clicking the  `Encrypt directory ` 
+> In the directories utilities sections, by clicking the  `Encrypt directory` 
 > button, you can enter the path of the directory to encrypt 
 > and, after clicking in the  `Encrypt` button,  you will receive a 256 bits key.
 > 
@@ -40,6 +40,7 @@ Tool to encrypt directories using AES Encryption implementation of pycryptodome 
 ### Encryption and decryption for files and nested directories inside and encrypted directory
 
 #### Key feature
+⭐⭐✨
 
 >With save and go you are able to access files and nested 
 > directories inside an encrypted directory
@@ -69,6 +70,9 @@ Tool to encrypt directories using AES Encryption implementation of pycryptodome 
 
 # Quick-start
 
+> Keep in mind that encryption and decryption can be slow with large amounts of data,
+> 
+> And don't hesitate to try all the functionalities with our `/dummy_folder`! 
 
 Automatic start:
 
@@ -80,7 +84,3 @@ Manual start, alternatively you can(after installing the dependencies):
 
     `waitress-serve --host 127.0.0.1 --port=5010 local_server.main:app`
 2. Open the html file located in `/front-end/main.html`
-
-> Keep in mind that encryption and decryption can be slow with large amounts of data,
-> 
-> And don't hesitate to try all the functionalities with our `/dummy_folder`! 
