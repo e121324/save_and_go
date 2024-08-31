@@ -43,7 +43,7 @@ const get_table_head = for_dir => {
         tr.appendChild(th);
     }
 
-    ["#", "name", "", ""].forEach(aux);
+    ["#", "Name", "", ""].forEach(aux);
 
     if (for_dir)
         aux("")
@@ -51,23 +51,6 @@ const get_table_head = for_dir => {
     thead.appendChild(tr);
     return thead
 }
-
-
-/* test info
-[
-    {
-        "code": "d0",
-        "key": "gf5+hbDcedLZL458975wvkVWfZB40/Y5G5/NLrcZGSo=",
-        "name": "leo"
-    },
-    {
-        "code": "d1",
-        "key": "mpZ1gWdQhNLHALeXNiDRmbFPpk7Pjr1u0y7dP0dWqEw=",
-        "name": "leoleo"
-    }
-]
- */
-
 
 let get_button = (style, text, disabled = false) => {
     let td = document.createElement("td");
@@ -85,8 +68,7 @@ let get_button = (style, text, disabled = false) => {
     return td
 }
 
-const get_table_row = (for_dir, code, n, key, path ) => {
-
+const get_table_row = (for_dir, code, n, key, path, encrypted ) => {
 
     let tr = document.createElement("tr"),
         th = document.createElement("th"),
@@ -106,16 +88,26 @@ const get_table_row = (for_dir, code, n, key, path ) => {
         tr.appendChild(get_button("btn btn-info", "Get info"));
     }
 
-    let b1 = get_button("btn btn-danger", "Encrypt", true);
+    let b1 = get_button("btn btn-danger", "Encrypt", encrypted);
     tr.appendChild(b1);
-    let b2 = get_button("btn btn-success", "Decrypt");
+    let b2 = get_button("btn btn-success", "Decrypt", !encrypted);
     tr.appendChild(b2);
 
     b1.children[0].addEventListener("click", () => {
         console.log("Encrypting with key: ", key);
         b1.children[0].disabled = true;
-        b2.children[0].disabled = false
-    });
+
+        let answer = data => {
+            console.log(data);
+            b2.children[0].disabled = false;
+        }
+
+        for_dir ?
+            encrypt_file_button_callback(code, n, key, path, answer)
+            :
+            encrypt_file_button_callback(code, n, key, path, answer);
+        });
+
     b2.children[0].addEventListener("click", () => {
         console.log("Decrypting with key: ", key);
         b2.children[0].disabled = true;
@@ -127,7 +119,8 @@ const get_table_row = (for_dir, code, n, key, path ) => {
             method: "POST",
             body: JSON.stringify({
                 "path": path + "/" + code,
-                "key": key_get_info.value
+                "folder_key": key_get_info.value,
+                "key": key
             }),
             headers: myHeaders,
         }).then(response => response.json())
@@ -142,11 +135,19 @@ const get_table_row = (for_dir, code, n, key, path ) => {
     return tr;
 }
 
+const element_in_array = (elem, arr) => {
+    for(let i = 0; i < arr.length; ++i) {
+        if(elem === arr[i])
+            return true;
+    }
+    return false;
+}
+
 const get_table_body = (data, for_dir) => {
     let tbody = document.createElement("tbody");
 
     for(let i = 0; i < data.info.length; ++i) {
-        tbody.appendChild(get_table_row(for_dir, data.info[i].code, data.info[i].name, data.info[i].key, data.path));
+        tbody.appendChild(get_table_row(for_dir, data.info[i].code, data.info[i].name, data.info[i].key, data.path, !element_in_array(i.toString(), data.changes)));
     }
 
     return tbody;
