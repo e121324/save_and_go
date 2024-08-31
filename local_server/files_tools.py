@@ -122,8 +122,6 @@ def decrypt_directory(directory, key, new_name=""):
         already_decrypted = load_data(directory, key, ".changes")
 
     # Decrypt the files first
-    # files = get_files_in_dir(directory)
-    # print(files)
     for i in range(len(keys)):
         if str(i) in already_decrypted:
             continue
@@ -160,18 +158,3 @@ def are_files_encrypted(dir):
 
 def already_encrypted(dir):
     return are_dir_encrypted(dir) or are_files_encrypted(dir)
-
-
-# direc = "/Users/emilev/PycharmProjects/save_and_go/local_server/test"
-
-# k2 = encrypt_directory(direc)
-# print(k2)
-# k2 = "tUyAYow1YCHsG6j9tRmm9Wm+ihq7CSj55Erv/6WQLMY="
-# input()
-# decrypt_directory(direc, k2)
-
-# print(load_data(direc, k2, ".dir", False))
-
-# ['/5M=', '5YUUawnd+OrDnip1v34bxA==', 'coSqXUboAZg7PrA68L8GkA==']
-# OPUkTwSMh5PbydMfdLzXCgUMvOQxgjX9Y3OpBUSyX5s=
-#

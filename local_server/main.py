@@ -1,18 +1,13 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
+import ntpath
+import os
 from local_server.files_tools import (encrypt_directory, decrypt_directory,
                                       load_data, encrypt_file, decrypt_file,
                                       store_data, already_encrypted,
                                       are_dir_encrypted, are_files_encrypted)
-import ntpath
-import os
-from flask_cors import CORS
-
 app = Flask(__name__)
 CORS(app)
-
-
-# TODO: FileExistsError:
-#  * [WinError 183] No se puede crear un archivo que ya existe
 
 @app.route("/encrypt_dir", methods=["POST"])
 def encrypt_1():
@@ -85,7 +80,6 @@ def info_1():
                 "msg": "No directories encrypted"
             })
         dir_data = load_data(direc, key, ".dir", destroy=False)
-        print(dir_data)
 
         response = {"path": direc, "changes": [], "info": []}
         for i in range(0, len(dir_data), 2):
@@ -128,7 +122,7 @@ def info_2():
         keys = load_data(direc, key, ".keys", destroy=False)
 
         changes = load_data(direc, key, ".changes", destroy=False) if os.path.isfile(direc + "/" + ".changes") else []
-        print(changes)
+
         response = {"path": direc,
                     "changes": changes,
                     "info": []}
@@ -168,16 +162,12 @@ def decrypt_2():
 
     print("Decrypting file: ", direc, file)
 
-    # key = load_data(direc, folder_key, ".keys", destroy=False)[int(file)]
-
     try:
         new_name = decrypt_file(key, directory=direc, name=file)
 
         data = [file, new_name] + (
             load_data(direc, folder_key, ".changes") if os.path.isfile(direc + "/" + ".changes") else [])
         store_data(data, direc, ".changes", folder_key)
-
-        # print(load_data(direc, folder_key, ".changes", destroy=False))
 
         return jsonify({
             "status": "ok",
