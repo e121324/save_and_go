@@ -58,7 +58,7 @@ def decrypt_1():
         decrypt_directory(direc, key, new_name=new_name)
         response = jsonify({
             "status": "ok",
-            "message": "Decryption complete"
+            "msg": "Decryption complete"
         })
     except Exception as e:
         print(e)
@@ -87,7 +87,7 @@ def info_1():
         dir_data = load_data(direc, key, ".dir", destroy=False)
         print(dir_data)
 
-        response = {"PATH": direc, "changes": [], "info": []}
+        response = {"path": direc, "changes": [], "info": []}
         for i in range(0, len(dir_data), 2):
 
             response["info"].append({
