@@ -32,8 +32,6 @@ const get_info_button = document.getElementById("get_info_button"),
 const get_info_container = document.getElementById("get_info_container");
 
 encrypt_dir_button.addEventListener("click", e => {
-    console.log(direc_en_input.value, key_en_input.value);
-
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -72,7 +70,6 @@ encrypt_dir_button.addEventListener("click", e => {
 })
 
 decrypt_dir_button.addEventListener("click", e => {
-    console.log(direc_de_input.value, key_de_input.value);
 
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
@@ -114,39 +111,8 @@ decrypt_dir_button.addEventListener("click", e => {
 
 
 get_info_button.addEventListener("click", async e => {
-    console.log(direc_get_info.value, key_get_info.value);
-
     // First let's get the dir info:
     await get_info(direc_get_info.value, key_get_info.value, get_info_container );
 
     get_info_container.setAttribute("class", "card card-body");
-
-    /*
-
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    fetch("http://127.0.0.1:5010/get_dir_info", {
-        method: "POST",
-        body: JSON.stringify({
-            "directory": direc_get_info.value,
-            "key": key_get_info.value,
-            "new_name": ""
-        }),
-        headers: myHeaders,
-    })
-        .then(res => res.json())
-        .then(res => {
-            console.log(res);
-            console.log(res.data.info[0].key)
-        });
-
-     */
-
-    /* let res_dir = await retrieve_dir_data(direc_get_info.value, key_get_info.value);
-
-    let res_files = await retrieve_files_data(direc_get_info.value, key_get_info.value);
-
-    display_dir_info(get_info_container, res_dir, res_files);
-*/
 });
