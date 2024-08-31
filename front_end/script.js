@@ -29,6 +29,8 @@ const get_info_button = document.getElementById("get_info_button"),
     direc_get_info = document.getElementById("direc_get_info"),
     key_get_info = document.getElementById("key_get_info");
 
+const get_info_container = document.getElementById("get_info_container");
+
 encrypt_dir_button.addEventListener("click", e => {
     console.log(direc_en_input.value, key_en_input.value);
 
@@ -135,6 +137,8 @@ get_info_button.addEventListener("click", async e => {
     let res_dir = await retrieve_dir_data(direc_get_info.value, key_get_info.value);
 
     let res_files = await retrieve_files_data(direc_get_info.value, key_get_info.value);
+
+    display_dir_info(get_info_container, res_dir, res_files);
 
     console.log(res_dir, res_files);
     console.log(res_dir.data.info[0].key);
