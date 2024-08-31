@@ -2,7 +2,7 @@
 
 Tool to encrypt directories using AES Encryption implementation of pycryptodome lib with a web based GUI using bootstrap and vanilla js connected with a flask API that runs on waitress(WSGI  server).
 
->With save and go you are able to access files and nested 
+>With save&go you are able to access files and nested 
 > directories inside an encrypted directory without the need to decrypt the whole directory.
 
 ### Contents:
@@ -42,7 +42,7 @@ Tool to encrypt directories using AES Encryption implementation of pycryptodome 
 #### Key feature
 ⭐⭐✨
 
->With save and go you are able to access files and nested 
+>With save&go you are able to access files and nested 
 > directories inside an encrypted directory
 > without the need to decrypt the whole directory.
 >
