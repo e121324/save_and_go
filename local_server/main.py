@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
-from files_tools import (encrypt_directory, decrypt_directory,
-                         load_data, decrypt_file, store_data, already_encrypted,
-                         are_dir_encrypted, are_files_encrypted)
+from local_server.files_tools import (encrypt_directory, decrypt_directory,
+                                      load_data, encrypt_file, decrypt_file,
+                                      store_data, already_encrypted,
+                                      are_dir_encrypted, are_files_encrypted)
 import ntpath
 import os
 from flask_cors import CORS
@@ -128,7 +129,7 @@ def info_2():
 
         changes = load_data(direc, key, ".changes", destroy=False) if os.path.isfile(direc + "/" + ".changes") else []
         print(changes)
-        response = {"PATH": direc,
+        response = {"path": direc,
                     "changes": changes,
                     "info": []}
         for i in range(len(keys)):
@@ -157,7 +158,8 @@ def info_2():
 def decrypt_2():
     req = request.get_json()
 
-    folder_key = req["key"]
+    folder_key = req["folder_key"]
+    key = req["key"]
     path = req["path"]
 
     direc, file = ntpath.split(path)
@@ -166,17 +168,62 @@ def decrypt_2():
 
     print("Decrypting file: ", direc, file)
 
-    key = load_data(direc, folder_key, ".keys", destroy=False)[int(file)]
+    # key = load_data(direc, folder_key, ".keys", destroy=False)[int(file)]
 
-    new_name = decrypt_file(key, directory=direc, name=file)
+    try:
+        new_name = decrypt_file(key, directory=direc, name=file)
 
-    data = [file, new_name] + (
-        load_data(direc, folder_key, ".changes") if os.path.isfile(direc + "/" + ".changes") else [])
-    store_data(data, direc, ".changes", folder_key)
+        data = [file, new_name] + (
+            load_data(direc, folder_key, ".changes") if os.path.isfile(direc + "/" + ".changes") else [])
+        store_data(data, direc, ".changes", folder_key)
 
-    # print(load_data(direc, folder_key, ".changes", destroy=False))
+        # print(load_data(direc, folder_key, ".changes", destroy=False))
 
-    return jsonify({"message": "File decrypted"})
+        return jsonify({
+            "status": "ok",
+            "msg": "File decrypted"
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "err",
+            "msg": str(e)
+        })
+
+
+@app.route("/encrypt_file", methods=["POST"])
+def encrypt_2():
+    req = request.get_json()
+
+    folder_key = req["folder_key"]
+    key = req["key"]
+    path = req["path"]
+    code = req["code"]
+
+    direc, file = ntpath.split(path)
+    if not file:
+        file = ntpath.basename(direc)
+
+    print("Encrypting file: ", direc, file)
+
+    try:
+        encrypt_file(directory=direc, name=file, new_name=code, key=key)
+        data = load_data(direc, folder_key, ".changes")
+
+        data.remove(file)
+        data.remove(code)
+
+        store_data(data, direc, ".changes", folder_key)
+
+        return jsonify({
+            "status": "ok",
+            "msg": "File encrypted"
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "err",
+            "msg": str(e)
+        })
 
 
 if __name__ == "__main__":

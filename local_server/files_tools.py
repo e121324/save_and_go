@@ -1,5 +1,5 @@
 import os
-from encryption_tools import encrypt, decrypt
+from local_server.encryption_tools import encrypt, decrypt
 
 
 def store_data(data, directory, name, key=""):
