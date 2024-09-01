@@ -9,6 +9,7 @@ from local_server.files_tools import (encrypt_directory, decrypt_directory,
 app = Flask(__name__)
 CORS(app)
 
+
 @app.route("/encrypt_dir", methods=["POST"])
 def encrypt_1():
     req = request.get_json()
@@ -90,7 +91,7 @@ def info_1():
                 "key": dir_data[i]
             })
 
-            if not os.path.isdir(direc + "/" + f"d{i // 2}"):
+            if not os.path.isdir(os.path.join(direc, f"d{i // 2}")):
                 response["changes"].append(f"d{i // 2}")
 
         return jsonify({
@@ -121,7 +122,7 @@ def info_2():
 
         keys = load_data(direc, key, ".keys", destroy=False)
 
-        changes = load_data(direc, key, ".changes", destroy=False) if os.path.isfile(direc + "/" + ".changes") else []
+        changes = load_data(direc, key, ".changes", destroy=False) if os.path.isfile(os.path.join(direc, ".changes")) else []
 
         response = {"path": direc,
                     "changes": changes,
@@ -166,7 +167,7 @@ def decrypt_2():
         new_name = decrypt_file(key, directory=direc, name=file)
 
         data = [file, new_name] + (
-            load_data(direc, folder_key, ".changes") if os.path.isfile(direc + "/" + ".changes") else [])
+            load_data(direc, folder_key, ".changes") if os.path.isfile(os.path.join(direc, ".changes")) else [])
         store_data(data, direc, ".changes", folder_key)
 
         return jsonify({
