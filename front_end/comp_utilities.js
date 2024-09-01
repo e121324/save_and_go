@@ -90,6 +90,7 @@ const get_table_row = (for_dir, code, n, key, path, encrypted, top_key ) => {
 
         b3.children[0].addEventListener("click", () => {
             console.log(key)
+            b3.children[0].disabled = true;
             get_info( path + "/" + code, key, td, true)
         });
     }
