@@ -2,8 +2,15 @@ import os
 from local_server.encryption_tools import encrypt, decrypt
 
 
+def rename_secure(old_name, new_name):
+    try:
+        os.rename(old_name, new_name)
+    except Exception as e:
+        print(e)
+
+
 def store_data(data, directory, name, key=""):
-    with open(directory + "/" + name, "xb") as f:
+    with open(os.path.join(directory, name), "xb") as f:
         content = "\n".join(data).encode(encoding="utf-8")
 
         key, new_content = encrypt(content, key=key, strong=True)
@@ -14,20 +21,20 @@ def store_data(data, directory, name, key=""):
 # load keys from file and delete file
 def load_data(directory, key, name, destroy=True):
     content = ""
-    with open(directory + "/" + name, "r+") as f:
+    with open(os.path.join(directory, name), "r+") as f:
         # TODO:
         #   * Verify that a key isn't cut in half due to the presence of a random new line
         content = f.read().split("\n")
         content = decrypt(key, content).decode("utf-8")
 
     if destroy:
-        os.remove(directory + "/" + name)
+        os.remove(os.path.join(directory, name))
     return content.split("\n")
 
 
 def encrypt_file(path="", directory="", name="", new_name="", key=""):
     # key = ""
-    file = path if path else directory + "/" + name
+    file = path if path else os.path.join(directory, name)
     with open(file, "r+b") as f:
         content = f.read()
 
@@ -39,12 +46,12 @@ def encrypt_file(path="", directory="", name="", new_name="", key=""):
         f.write("\n".join(new_content + encrypted_name).encode("utf-8"))
         f.truncate()
 
-    os.rename(file, directory + "/" + new_name)
+    rename_secure(file, os.path.join(directory, new_name))
     return key
 
 
 def decrypt_file(key, path="", directory="", name="", rewrite=True, name_only=False):
-    file = path if path else directory + "/" + name
+    file = path if path else os.path.join(directory, name)
 
     new_name = ""
     new_content = ""
@@ -62,7 +69,7 @@ def decrypt_file(key, path="", directory="", name="", rewrite=True, name_only=Fa
             f.write(new_content)
             f.truncate()
 
-        os.rename(file, directory + "/" + new_name)
+        rename_secure(file, os.path.join(directory, new_name))
         return new_name
     else:
         return (new_name, new_content) if not name_only else new_name
@@ -91,10 +98,11 @@ def encrypt_directory(directory, nested=False, key="", new_name=""):
     directories = [f for f in os.listdir(directory) if os.path.isdir(os.path.join(directory, f))]
 
     for i in range(len(directories)):
-        k = encrypt_directory(directory + "/" + directories[i], nested=True)
+        k = encrypt_directory(os.path.join(directory, directories[i]), nested=True)
         dir_data.append(k)
         dir_data.append(directories[i])
-        os.rename(directory + "/" + directories[i], directory + "/d" + str(i))
+
+        rename_secure(os.path.join(directory, directories[i]), os.path.join(directory, f"d{i}"))
 
     # Store the keys and titles of the directories in a file encrypted with the same key as the other keys
 
@@ -104,21 +112,21 @@ def encrypt_directory(directory, nested=False, key="", new_name=""):
     if not tmp:
         base = os.path.dirname(base)
     if new_name:
-        os.rename(directory, os.path.join(base, new_name))
+        rename_secure(directory, os.path.join(base, new_name) )
 
     return key
 
 
 def decrypt_directory(directory, key, new_name=""):
     keys = []
-    if os.path.isfile(directory + "/.keys"):
+    if os.path.isfile(os.path.join(directory, ".keys")):
         keys = load_data(directory, key, ".keys")
     dir_data = []
-    if os.path.isfile(directory + "/.dir"):
+    if os.path.isfile(os.path.join(directory, ".dir")):
         dir_data = load_data(directory, key, ".dir")
 
     already_decrypted = []
-    if os.path.isfile(directory + "/.changes"):
+    if os.path.isfile(os.path.join(directory, ".changes")):
         already_decrypted = load_data(directory, key, ".changes")
 
     # Decrypt the files first
@@ -136,8 +144,8 @@ def decrypt_directory(directory, key, new_name=""):
             print(f"Already decrypted d{i // 2}")
             continue
         try:
-            os.rename(directory + "/d" + str(i // 2), directory + "/" + dir_data[i + 1])
-            decrypt_directory(directory + "/" + dir_data[i + 1], dir_data[i])
+            rename_secure( os.path.join(directory, f"d{i//2}"), os.path.join(directory, dir_data[i + 1] ))
+            decrypt_directory(os.path.join(directory, dir_data[i + 1]), dir_data[i])
         except Exception as e:
             print(f"Something went wrong {e}")
 
@@ -145,7 +153,7 @@ def decrypt_directory(directory, key, new_name=""):
     if not tmp:
         base = os.path.dirname(base)
     if new_name:
-        os.rename(directory, os.path.join(base, new_name))
+        rename_secure(directory, os.path.join(base, new_name))
 
 
 def are_dir_encrypted(dir):
