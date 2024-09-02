@@ -76,7 +76,7 @@ Tool to encrypt directories using AES Encryption implementation of pycryptodome 
 
 Automatic start:
 
-2. Install all the dependencies of the `requirements.txt` file
+1. Install all the dependencies of the `requirements.txt` file
 2. Start `start.py` file, it will open the interface and run the local server
 
 Manual start, alternatively you can(after installing the dependencies): 
